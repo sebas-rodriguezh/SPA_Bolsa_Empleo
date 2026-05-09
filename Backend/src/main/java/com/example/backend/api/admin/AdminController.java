@@ -25,9 +25,6 @@ public class AdminController {
     @Autowired private ServiceE serviceE;
     @Autowired private ServiceO serviceO;
 
-    private boolean esAdmin(HttpSession session) {
-        return session.getAttribute("usuario") instanceof Administrador;
-    }
 
     @GetMapping("/dashboard")
     public ResponseEntity<?> dashboard(Authentication auth) {
