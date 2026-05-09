@@ -12,9 +12,6 @@ import com.example.backend.logic.oferente.ServiceO;
 import com.example.backend.security.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -27,7 +24,6 @@ public class AuthController {
     @Autowired private ServiceE serviceE;
     @Autowired private ServiceO serviceO;
     @Autowired private JwtService jwtService;
-    @Autowired private AuthenticationManager authenticationManager;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginDTO dto) {
@@ -38,13 +34,11 @@ public class AuthController {
 
         Object usuarioObj = serviceA.findUserByEmailAndPassword(dto.getCorreo().trim(), dto.getClave());
 
-        if (usuarioObj == null)
-        {
+        if (usuarioObj == null) {
             return ResponseEntity.status(401).body(Map.of("error", "Correo o contraseña incorrectos"));
         }
 
-        if ("PENDIENTE".equals(usuarioObj))
-        {
+        if ("PENDIENTE".equals(usuarioObj)) {
             return ResponseEntity.status(403).body(Map.of("error", "Cuenta pendiente de aprobación por un administrador"));
         }
 
@@ -79,16 +73,18 @@ public class AuthController {
         ));
     }
 
+
     @PostMapping("/registro/empresa")
     public ResponseEntity<?> registrarEmpresa(@RequestBody RegistroEmpresaDTO dto) {
+
         if (dto.getNombre() == null || dto.getNombre().isBlank() || !dto.getNombre().matches("^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s]+$"))
             return ResponseEntity.badRequest().body(Map.of("error", "El nombre solo puede contener letras"));
 
-        if (dto.getClave() == null || dto.getClave().length() < 8)
-            return ResponseEntity.badRequest().body(Map.of("error", "La contraseña debe tener al menos 8 caracteres"));
-
         if (dto.getLocalizacion() == null || dto.getLocalizacion().isBlank() || !dto.getLocalizacion().matches(".*[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ].*"))
             return ResponseEntity.badRequest().body(Map.of("error", "La localización debe contener al menos una letra"));
+
+        if (dto.getClave() == null || dto.getClave().length() < 8)
+            return ResponseEntity.badRequest().body(Map.of("error", "La contraseña debe tener al menos 8 caracteres"));
 
         if (dto.getTelefono() == null || !dto.getTelefono().matches("\\d{8}"))
             return ResponseEntity.badRequest().body(Map.of("error", "El teléfono debe tener exactamente 8 dígitos"));
@@ -113,8 +109,10 @@ public class AuthController {
         empresa.setAutorizada(false);
         serviceE.registrarEmpresa(empresa);
 
-        return ResponseEntity.status(201).body(Map.of("mensaje", "Empresa registrada. Pendiente de aprobación."));
+        return ResponseEntity.status(201)
+                .body(Map.of("mensaje", "Empresa registrada correctamente. Pendiente de aprobación por un administrador."));
     }
+
 
     @PostMapping("/registro/oferente")
     public ResponseEntity<?> registrarOferente(@RequestBody RegistroOferenteDTO dto) {
@@ -125,15 +123,6 @@ public class AuthController {
         if (dto.getNombre() == null || dto.getNombre().isBlank() || !dto.getNombre().matches("^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s]+$"))
             return ResponseEntity.badRequest().body(Map.of("error", "El nombre solo puede contener letras"));
 
-        if (dto.getClave() == null || dto.getClave().length() < 8)
-            return ResponseEntity.badRequest().body(Map.of("error", "La contraseña debe tener al menos 8 caracteres"));
-
-        if (dto.getTelefono() == null || !dto.getTelefono().matches("\\d{8}"))
-            return ResponseEntity.badRequest().body(Map.of("error", "El teléfono debe tener exactamente 8 dígitos"));
-
-        if (dto.getCorreo() == null || !dto.getCorreo().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"))
-            return ResponseEntity.badRequest().body(Map.of("error", "El correo no es válido"));
-
         if (dto.getPrimerApellido() == null || dto.getPrimerApellido().isBlank() || !dto.getPrimerApellido().matches("^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s]+$"))
             return ResponseEntity.badRequest().body(Map.of("error", "El primer apellido solo puede contener letras"));
 
@@ -142,6 +131,15 @@ public class AuthController {
 
         if (dto.getLugarResidencia() == null || dto.getLugarResidencia().isBlank() || !dto.getLugarResidencia().matches(".*[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ].*"))
             return ResponseEntity.badRequest().body(Map.of("error", "El lugar de residencia debe contener al menos una letra"));
+
+        if (dto.getTelefono() == null || !dto.getTelefono().matches("\\d{8}"))
+            return ResponseEntity.badRequest().body(Map.of("error", "El teléfono debe tener exactamente 8 dígitos"));
+
+        if (dto.getCorreo() == null || !dto.getCorreo().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"))
+            return ResponseEntity.badRequest().body(Map.of("error", "El correo no es válido"));
+
+        if (dto.getClave() == null || dto.getClave().length() < 8)
+            return ResponseEntity.badRequest().body(Map.of("error", "La contraseña debe tener al menos 8 caracteres"));
 
         String error = serviceO.validarRegistro(dto.getCorreo(), dto.getIdentificacion());
         if (error != null)
@@ -159,6 +157,7 @@ public class AuthController {
         oferente.setAutorizado(false);
         serviceO.registrarOferente(oferente);
 
-        return ResponseEntity.status(201).body(Map.of("mensaje", "Oferente registrado. Pendiente de aprobación."));
+        return ResponseEntity.status(201)
+                .body(Map.of("mensaje", "Oferente registrado correctamente. Pendiente de aprobación por un administrador."));
     }
 }
