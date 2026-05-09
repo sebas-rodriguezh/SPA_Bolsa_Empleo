@@ -14,6 +14,7 @@ import com.example.backend.logic.puesto.ServiceP;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,40 +31,42 @@ public class OferenteController {
     @Autowired private ServiceP serviceP;
     @Autowired private ServicePO servicePO;
 
-    private Oferente getOferenteAutenticado(HttpSession session) {
-        Object u = session.getAttribute("usuario");
-        if (u instanceof Oferente) return (Oferente) u;
-        return null;
+    private Oferente getOferente(Authentication auth) {
+        return serviceO.findByCorreo(auth.getName());
     }
 
     @GetMapping("/dashboard")
-    public ResponseEntity<?> dashboard(HttpSession session) {
-        Oferente oferente = getOferenteAutenticado(session);
+    public ResponseEntity<?> dashboard(Authentication auth)
+    {
+        Oferente oferente = getOferente(auth);
         if (oferente == null)
-            return ResponseEntity.status(401).body(Map.of("error", "No autorizado"));
+            return ResponseEntity.status(401).body(Map.of("error", "Oferente no encontrado"));
 
         return ResponseEntity.ok(Map.of(
+                "id", oferente.getId(),
                 "nombre", oferente.getNombre(),
                 "primerApellido", oferente.getPrimerApellido(),
-                "correo", oferente.getCorreo(),
                 "identificacion", oferente.getIdentificacion(),
+                "correo", oferente.getCorreo(),
                 "telefono", oferente.getTelefono(),
+                "nacionalidad", oferente.getNacionalidad(),
                 "lugarResidencia", oferente.getLugarResidencia(),
                 "rutaCurriculum", oferente.getRutaCurriculum() != null ? oferente.getRutaCurriculum() : ""
         ));
     }
 
     @GetMapping("/habilidades")
-    public ResponseEntity<?> listarHabilidades(HttpSession session) {
-        Oferente oferente = getOferenteAutenticado(session);
+    public ResponseEntity<?> listarHabilidades(Authentication auth)
+    {
+        Oferente oferente = getOferente(auth);
         if (oferente == null)
-            return ResponseEntity.status(401).body(Map.of("error", "No autorizado"));
+            return ResponseEntity.status(401).body(Map.of("error", "Oferente no encontrado"));
 
         List<Map<String, Object>> habilidades = serviceOH.findByOferente(oferente)
                 .stream()
                 .map(h -> Map.of(
                         "id", (Object) h.getId(),
-                        "caracteristicaId", h.getCaracteristica().getId(),
+                        "caracteristicaId",h.getCaracteristica().getId(),
                         "caracteristica", h.getCaracteristica().getNombre(),
                         "rutaCompleta", serviceC.buildRutaString(h.getCaracteristica()),
                         "nivel", h.getNivel()
@@ -74,11 +77,11 @@ public class OferenteController {
     }
 
     @PostMapping("/habilidades")
-    public ResponseEntity<?> agregarHabilidad(@RequestBody AgregarHabilidadDTO dto, HttpSession session)
+    public ResponseEntity<?> agregarHabilidad(@RequestBody AgregarHabilidadDTO dto, Authentication auth)
     {
-        Oferente oferente = getOferenteAutenticado(session);
+        Oferente oferente = getOferente(auth);
         if (oferente == null)
-            return ResponseEntity.status(401).body(Map.of("error", "No autorizado"));
+            return ResponseEntity.status(401).body(Map.of("error", "Oferente no encontrado"));
 
         if (dto.getNivel() == null || dto.getNivel() < 1 || dto.getNivel() > 5)
             return ResponseEntity.badRequest().body(Map.of("error", "El nivel debe estar entre 1 y 5"));
@@ -88,26 +91,38 @@ public class OferenteController {
             return ResponseEntity.badRequest().body(Map.of("error", "Característica no encontrada"));
 
         serviceOH.agregarOActualizar(oferente, c, dto.getNivel());
-        return ResponseEntity.ok(Map.of("mensaje", "Habilidad registrada correctamente"));
+        return ResponseEntity.ok(Map.of("mensaje", "Habilidad registrada/actualizada correctamente"));
     }
 
+
     @DeleteMapping("/habilidades/{id}")
-    public ResponseEntity<?> eliminarHabilidad(@PathVariable Integer id, HttpSession session)
+    public ResponseEntity<?> eliminarHabilidad(@PathVariable Integer id, Authentication auth)
     {
-        Oferente oferente = getOferenteAutenticado(session);
+        Oferente oferente = getOferente(auth);
         if (oferente == null)
-            return ResponseEntity.status(401).body(Map.of("error", "No autorizado"));
+            return ResponseEntity.status(401).body(Map.of("error", "Oferente no encontrado"));
 
         serviceOH.eliminar(id);
-        return ResponseEntity.ok(Map.of("mensaje", "Habilidad eliminada"));
+        return ResponseEntity.ok(Map.of("mensaje", "Habilidad eliminada correctamente"));
+    }
+
+    @GetMapping("/cv")
+    public ResponseEntity<?> verCV(Authentication auth) {
+        Oferente oferente = getOferente(auth);
+        if (oferente == null)
+            return ResponseEntity.status(401).body(Map.of("error", "Oferente no encontrado"));
+
+        return ResponseEntity.ok(Map.of(
+                "rutaCurriculum", oferente.getRutaCurriculum() != null ? oferente.getRutaCurriculum() : ""
+        ));
     }
 
     @PutMapping("/cv")
-    public ResponseEntity<?> actualizarCV(@RequestBody ActualizarCVDTO dto, HttpSession session)
+    public ResponseEntity<?> actualizarCV(@RequestBody ActualizarCVDTO dto, Authentication auth)
     {
-        Oferente oferente = getOferenteAutenticado(session);
+        Oferente oferente = getOferente(auth);
         if (oferente == null)
-            return ResponseEntity.status(401).body(Map.of("error", "No autorizado"));
+            return ResponseEntity.status(401).body(Map.of("error", "Oferente no encontrado"));
 
         String url = dto.getRutaCurriculum();
         if (url == null || url.isBlank())
@@ -119,29 +134,29 @@ public class OferenteController {
         if (!esDrive && !esOneDrive)
             return ResponseEntity.badRequest().body(Map.of("error", "El link debe ser de Google Drive o OneDrive"));
 
-        oferente.setRutaCurriculum(url);
+        oferente.setRutaCurriculum(url.trim());
         serviceO.actualizarOferente(oferente);
-        session.setAttribute("usuario", oferente);
         return ResponseEntity.ok(Map.of("mensaje", "CV actualizado correctamente"));
     }
 
+
     @DeleteMapping("/cv")
-    public ResponseEntity<?> eliminarCV(HttpSession session) {
-        Oferente oferente = getOferenteAutenticado(session);
+    public ResponseEntity<?> eliminarCV(Authentication auth)
+    {
+        Oferente oferente = getOferente(auth);
         if (oferente == null)
-            return ResponseEntity.status(401).body(Map.of("error", "No autorizado"));
+            return ResponseEntity.status(401).body(Map.of("error", "Oferente no encontrado"));
 
         oferente.setRutaCurriculum(null);
         serviceO.actualizarOferente(oferente);
-        session.setAttribute("usuario", oferente);
-        return ResponseEntity.ok(Map.of("mensaje", "CV eliminado"));
+        return ResponseEntity.ok(Map.of("mensaje", "CV eliminado correctamente"));
     }
 
     @GetMapping("/puestos")
-    public ResponseEntity<?> verPuestosDisponibles(HttpSession session) {
-        Oferente oferente = getOferenteAutenticado(session);
+    public ResponseEntity<?> verPuestosDisponibles(Authentication auth) {
+        Oferente oferente = getOferente(auth);
         if (oferente == null)
-            return ResponseEntity.status(401).body(Map.of("error", "No autorizado"));
+            return ResponseEntity.status(401).body(Map.of("error", "Oferente no encontrado"));
 
         List<Map<String, Object>> puestos = serviceP.findAllActivos()
                 .stream()
@@ -152,8 +167,8 @@ public class OferenteController {
                         "salario", p.getSalario(),
                         "moneda", p.getMoneda(),
                         "esPublico", p.getEsPublico(),
-                        "empresaNombre", p.getEmpresa().getNombre(),
-                        "fechaRegistro", p.getFechaRegistro().toString(),
+                        "empresaNombre",p.getEmpresa().getNombre(),
+                        "fechaRegistro",p.getFechaRegistro().toString(),
                         "yaPostulado", servicePO.yaPostulado(oferente, p)
                 ))
                 .collect(Collectors.toList());
@@ -162,28 +177,36 @@ public class OferenteController {
     }
 
     @PostMapping("/postulaciones")
-    public ResponseEntity<?> postular(@RequestBody Map<String, Integer> body, HttpSession session) {
-        Oferente oferente = getOferenteAutenticado(session);
+    public ResponseEntity<?> postular(@RequestBody Map<String, Integer> body, Authentication auth)
+    {
+        Oferente oferente = getOferente(auth);
         if (oferente == null)
-            return ResponseEntity.status(401).body(Map.of("error", "No autorizado"));
+            return ResponseEntity.status(401).body(Map.of("error", "Oferente no encontrado"));
 
         Integer puestoId = body.get("puestoId");
+        if (puestoId == null)
+            return ResponseEntity.badRequest().body(Map.of("error", "puestoId es requerido"));
+
         Puesto puesto = serviceP.findById(puestoId).orElse(null);
         if (puesto == null)
             return ResponseEntity.status(404).body(Map.of("error", "Puesto no encontrado"));
 
+        if (!puesto.getActivo())
+            return ResponseEntity.badRequest().body(Map.of("error", "El puesto no está activo"));
+
         if (servicePO.yaPostulado(oferente, puesto))
-            return ResponseEntity.badRequest().body(Map.of("error", "Ya te postulaste a este puesto"));
+            return ResponseEntity.badRequest().body(Map.of("error", "Ya te postulaste a este puesto anteriormente"));
 
         servicePO.postular(oferente, puesto);
         return ResponseEntity.ok(Map.of("mensaje", "Postulación registrada correctamente"));
     }
 
     @GetMapping("/postulaciones")
-    public ResponseEntity<?> misPostulaciones(HttpSession session) {
-        Oferente oferente = getOferenteAutenticado(session);
+    public ResponseEntity<?> misPostulaciones(Authentication auth)
+    {
+        Oferente oferente = getOferente(auth);
         if (oferente == null)
-            return ResponseEntity.status(401).body(Map.of("error", "No autorizado"));
+            return ResponseEntity.status(401).body(Map.of("error", "Oferente no encontrado"));
 
         List<Map<String, Object>> postulaciones = servicePO.findByOferente(oferente)
                 .stream()
@@ -193,7 +216,7 @@ public class OferenteController {
                         "empresaNombre", p.getPuesto().getEmpresa().getNombre(),
                         "salario", p.getPuesto().getSalario(),
                         "moneda", p.getPuesto().getMoneda(),
-                        "fechaPostulacion", p.getFechaPostulacion().toString(),
+                        "fechaPostulacion",p.getFechaPostulacion().toString(),
                         "estado", p.getEstado()
                 ))
                 .collect(Collectors.toList());
@@ -202,23 +225,30 @@ public class OferenteController {
     }
 
     @PostMapping("/puestos/buscar")
-    public ResponseEntity<?> buscarPuestos(@RequestBody Map<String, Object> body, HttpSession session) {
-        Oferente oferente = getOferenteAutenticado(session);
+    public ResponseEntity<?> buscarPuestos(@RequestBody Map<String, Object> body, Authentication auth)
+    {
+        Oferente oferente = getOferente(auth);
         if (oferente == null)
-            return ResponseEntity.status(401).body(Map.of("error", "No autorizado"));
+            return ResponseEntity.status(401).body(Map.of("error", "Oferente no encontrado"));
 
         @SuppressWarnings("unchecked")
         List<Integer> ids = (List<Integer>) body.get("caracteristicaIds");
         String moneda = (String) body.get("moneda");
+
+        if (ids == null || ids.isEmpty())
+            return ResponseEntity.badRequest().body(Map.of("error", "Debe seleccionar al menos una característica"));
 
         List<Map<String, Object>> resultados = serviceP.buscarPuestosParaOferente(ids, moneda)
                 .stream()
                 .map(p -> Map.of(
                         "id", (Object) p.getId(),
                         "nombre", p.getNombre(),
+                        "descripcion", p.getDescripcion(),
                         "salario", p.getSalario(),
                         "moneda", p.getMoneda(),
-                        "empresaNombre", p.getEmpresa().getNombre(),
+                        "esPublico", p.getEsPublico(),
+                        "empresaNombre",p.getEmpresa().getNombre(),
+                        "fechaRegistro",p.getFechaRegistro().toString(),
                         "yaPostulado", servicePO.yaPostulado(oferente, p)
                 ))
                 .collect(Collectors.toList());

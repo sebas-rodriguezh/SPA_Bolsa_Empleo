@@ -14,9 +14,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 
-// api/publico/** (sin token)
-
-
 @RestController
 @RequestMapping("/api/publico")
 public class PublicoController {
@@ -25,22 +22,11 @@ public class PublicoController {
     @Autowired private ServiceC serviceC;
 
 
-    /**
-     * GET /api/publico/puestos/recientes
-     * Los 5 puestos públicos más recientes (página de inicio).
-     */
-
     @GetMapping("/puestos/recientes")
     public ResponseEntity<?> puestosRecientes() {
         List<PuestoResponseDTO> puestos = serviceP.getUltimosPuestosPublicos().stream().map(this::toDTO).collect(Collectors.toList());
         return ResponseEntity.ok(puestos);
     }
-
-    /**
-     * POST /api/publico/puestos/buscar
-     * Búsqueda pública de puestos por características.
-     * Body: { "caracteristicaIds": [1, 3, 5], "moneda": "CRC" }
-     */
 
     @PostMapping("/puestos/buscar")
     public ResponseEntity<?> buscarPuestos(@RequestBody Map<String, Object> body) {
@@ -50,11 +36,6 @@ public class PublicoController {
         List<PuestoResponseDTO> resultados = serviceP.buscarPuestosPublicos(ids, moneda).stream().map(this::toDTO).collect(Collectors.toList());
         return ResponseEntity.ok(resultados);
     }
-
-    /**
-     * GET /api/publico/caracteristicas
-     * Árbol de características para los checkboxes de búsqueda.
-     */
 
     @GetMapping("/caracteristicas")
     public ResponseEntity<?> caracteristicas()
