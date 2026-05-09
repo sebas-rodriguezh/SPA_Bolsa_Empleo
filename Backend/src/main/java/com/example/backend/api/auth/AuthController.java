@@ -1,6 +1,7 @@
 package com.example.backend.api.auth;
 
 import com.example.backend.dto.auth.LoginDTO;
+import com.example.backend.dto.auth.LoginResponseDTO;
 import com.example.backend.dto.empresa.RegistroEmpresaDTO;
 import com.example.backend.dto.oferente.RegistroOferenteDTO;
 import com.example.backend.logic.administrador.Administrador;
@@ -63,14 +64,9 @@ public class AuthController {
 
         String token = jwtService.generateToken(dto.getCorreo().trim(), rol);
 
-        return ResponseEntity.ok(Map.of(
-                "token", token,
-                "tokenType","Bearer",
-                "rol", rol,
-                "nombre", nombre,
-                "correo", dto.getCorreo().trim(),
-                "id", id
-        ));
+        LoginResponseDTO response = new LoginResponseDTO(token, rol, dto.getCorreo().trim(), nombre, id);
+
+        return ResponseEntity.ok(response);
     }
 
 
