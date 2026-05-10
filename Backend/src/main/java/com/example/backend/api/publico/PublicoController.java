@@ -37,21 +37,40 @@ public class PublicoController {
         return ResponseEntity.ok(resultados);
     }
 
+//    @GetMapping("/caracteristicas")
+//    public ResponseEntity<?> caracteristicas()
+//    {
+//        List<Map<String, Object>> arbol = serviceC.getArbolOrdenado().stream().map(c -> {
+//            List<Caracteristica> ruta = serviceC.buildRuta(c);
+//            int nivel = ruta.size() - 1;
+//            return Map.of(
+//                    "id", (Object) c.getId(),
+//                    "nombre", c.getNombre(),
+//                    "nivel", nivel,
+//                    "padreId", c.getPadre() != null ? c.getPadre().getId() : null
+//            );
+//        }).collect(Collectors.toList());
+//
+//        return  ResponseEntity.ok(arbol);
+//    }
+
     @GetMapping("/caracteristicas")
     public ResponseEntity<?> caracteristicas()
     {
         List<Map<String, Object>> arbol = serviceC.getArbolOrdenado().stream().map(c -> {
             List<Caracteristica> ruta = serviceC.buildRuta(c);
             int nivel = ruta.size() - 1;
-            return Map.of(
-                    "id", (Object) c.getId(),
-                    "nombre", c.getNombre(),
-                    "nivel", nivel,
-                    "padreId", c.getPadre() != null ? c.getPadre().getId() : null
-            );
+
+            Map<String, Object> map = new java.util.HashMap<>();
+            map.put("id", c.getId());
+            map.put("nombre", c.getNombre());
+            map.put("nivel", nivel);
+            map.put("padreId", c.getPadre() != null ? c.getPadre().getId() : null);
+
+            return map;
         }).collect(Collectors.toList());
 
-        return  ResponseEntity.ok(arbol);
+        return ResponseEntity.ok(arbol);
     }
 
     private PuestoResponseDTO toDTO(Puesto p) {

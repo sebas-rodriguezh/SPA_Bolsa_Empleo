@@ -300,6 +300,7 @@ public class EmpresaController {
     }
 
 
+    //Revisarlo
     @GetMapping("/reportes")
     public ResponseEntity<?> reportesEmpresa(@RequestParam(required = false) Integer puestoId, Authentication auth)
     {
