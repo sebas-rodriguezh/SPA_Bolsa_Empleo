@@ -18,6 +18,13 @@ import OferentesPendientes from './pages/admin/OferentesPendientes';
 import Caracteristicas     from './pages/admin/Caracteristicas';
 import Reportes            from './pages/admin/Reportes';
 
+// Oferente
+import OferenteDashboard   from './pages/oferente/Dashboard';
+import Habilidades         from './pages/oferente/Habilidades';
+import CV                  from './pages/oferente/CV';
+import Postulacion         from './pages/oferente/Postulacion';
+import MisPostulaciones    from './pages/oferente/MisPostulaciones';
+
 export default function App() {
   return (
       <AuthProvider>
@@ -41,9 +48,17 @@ export default function App() {
               <Route path="reportes"             element={<Reportes />} />
             </Route>
 
-            {/* Empresa y Oferente — se completan en Fase 6 y 7 */}
-            <Route path="/empresa/*"  element={<ProtectedRoute rol="EMPRESA" />} />
-            <Route path="/oferente/*" element={<ProtectedRoute rol="OFERENTE" />} />
+            {/* Oferente */}
+            <Route path="/oferente" element={<ProtectedRoute rol="OFERENTE" />}>
+              <Route path="dashboard"      element={<OferenteDashboard />} />
+              <Route path="habilidades"    element={<Habilidades />} />
+              <Route path="cv"             element={<CV />} />
+              <Route path="postulacion"    element={<Postulacion />} />
+              <Route path="postulaciones"  element={<MisPostulaciones />} />
+            </Route>
+
+            {/* Empresa — se completa en Fase 6 */}
+            <Route path="/empresa/*" element={<ProtectedRoute rol="EMPRESA" />} />
 
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
