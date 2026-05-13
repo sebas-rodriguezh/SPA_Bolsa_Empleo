@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+//Revisar formatos de salida para los reportes del admin hacia los puestos aplicados.
+
 @RestController
 @RequestMapping("/api/admin")
 public class AdminController {
