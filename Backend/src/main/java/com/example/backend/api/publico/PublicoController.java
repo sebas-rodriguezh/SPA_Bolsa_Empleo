@@ -36,7 +36,7 @@ public class PublicoController {
         List<PuestoResponseDTO> resultados = serviceP.buscarPuestosPublicos(ids, moneda).stream().map(this::toDTO).collect(Collectors.toList());
         return ResponseEntity.ok(resultados);
     }
-
+// prueba
 //    @GetMapping("/caracteristicas")
 //    public ResponseEntity<?> caracteristicas()
 //    {
