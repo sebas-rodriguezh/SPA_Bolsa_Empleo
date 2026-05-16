@@ -73,8 +73,9 @@ public class EmpresaController {
                         p.getEsPublico(),
                         p.getActivo(),
                         p.getFechaRegistro().toString(),
-                        p.getEmpresa().getNombre())
-                )
+                        p.getEmpresa().getNombre(),
+                        new java.util.ArrayList<>()
+                ))
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(puestos);

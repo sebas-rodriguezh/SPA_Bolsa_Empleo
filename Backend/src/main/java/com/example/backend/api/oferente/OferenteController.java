@@ -160,17 +160,7 @@ public class OferenteController {
 
         List<Map<String, Object>> puestos = serviceP.findAllActivos()
                 .stream()
-                .map(p -> Map.of(
-                        "id", (Object) p.getId(),
-                        "nombre", p.getNombre(),
-                        "descripcion", p.getDescripcion(),
-                        "salario", p.getSalario(),
-                        "moneda", p.getMoneda(),
-                        "esPublico", p.getEsPublico(),
-                        "empresaNombre",p.getEmpresa().getNombre(),
-                        "fechaRegistro",p.getFechaRegistro().toString(),
-                        "yaPostulado", servicePO.yaPostulado(oferente, p)
-                ))
+                .map(p -> toDTOConYaPostulado(p, oferente))
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(puestos);
@@ -225,8 +215,7 @@ public class OferenteController {
     }
 
     @PostMapping("/puestos/buscar")
-    public ResponseEntity<?> buscarPuestos(@RequestBody Map<String, Object> body, Authentication auth)
-    {
+    public ResponseEntity<?> buscarPuestos(@RequestBody Map<String, Object> body, Authentication auth) {
         Oferente oferente = getOferente(auth);
         if (oferente == null)
             return ResponseEntity.status(401).body(Map.of("error", "Oferente no encontrado"));
@@ -240,19 +229,37 @@ public class OferenteController {
 
         List<Map<String, Object>> resultados = serviceP.buscarPuestosParaOferente(ids, moneda)
                 .stream()
-                .map(p -> Map.of(
-                        "id", (Object) p.getId(),
-                        "nombre", p.getNombre(),
-                        "descripcion", p.getDescripcion(),
-                        "salario", p.getSalario(),
-                        "moneda", p.getMoneda(),
-                        "esPublico", p.getEsPublico(),
-                        "empresaNombre",p.getEmpresa().getNombre(),
-                        "fechaRegistro",p.getFechaRegistro().toString(),
-                        "yaPostulado", servicePO.yaPostulado(oferente, p)
-                ))
+                .map(p -> toDTOConYaPostulado(p, oferente))
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(resultados);
+    }
+
+    private Map<String, Object> toDTOConYaPostulado(Puesto p, Oferente oferente) {
+        List<Map<String, Object>> requisitos = serviceP
+                .findRequisitosByPuesto(p)
+                .stream()
+                .map(r -> {
+                    Map<String, Object> req = new java.util.LinkedHashMap<>();
+                    req.put("caracteristicaNombre", r.getCaracteristica().getNombre());
+                    req.put("rutaCompleta", serviceC.buildRutaString(r.getCaracteristica()));
+                    req.put("nivel", r.getNivel());
+                    return req;
+                })
+                .collect(Collectors.toList());
+
+        Map<String, Object> dto = new java.util.LinkedHashMap<>();
+        dto.put("id", p.getId());
+        dto.put("nombre", p.getNombre());
+        dto.put("descripcion", p.getDescripcion());
+        dto.put("salario", p.getSalario());
+        dto.put("moneda", p.getMoneda());
+        dto.put("esPublico", p.getEsPublico());
+        dto.put("empresaNombre", p.getEmpresa().getNombre());
+        dto.put("fechaRegistro", p.getFechaRegistro().toString());
+        dto.put("yaPostulado", servicePO.yaPostulado(oferente, p));
+        dto.put("requisitos", requisitos);
+
+        return dto;
     }
 }

@@ -12,30 +12,54 @@ const MESES = [
     { v: 10, n: 'Octubre' }, { v: 11, n: 'Noviembre' }, { v: 12, n: 'Diciembre' },
 ];
 
+
+function formatSalario(salario, moneda) {
+    const num = parseFloat(salario);
+    if (isNaN(num)) return '—';
+    const simbolo = moneda === 'USD' ? '$' : moneda === 'EUR' ? '€' : '₡';
+    return `${simbolo} ${num.toLocaleString('es-CR', { minimumFractionDigits: 2 })}`;
+}
+
+function formatFecha(fecha) {
+    if (!fecha) return '—';
+    const str = String(fecha);
+    if (str.includes('-')) {
+        const [y, m, d] = str.split('-');
+        return `${d}/${m}/${y}`;
+    }
+    return str;
+}
+
 function TablaReporte({ puestos }) {
+    if (!puestos || puestos.length === 0) return null;
+
     return (
         <table className="table table-sm table-bordered table-hover mb-0">
             <thead className="table-secondary">
             <tr>
                 <th style={{ width: '4%' }}>#</th>
-                <th style={{ width: '18%' }}>Nombre del puesto</th>
-                <th style={{ width: '16%' }}>Empresa</th>
-                <th style={{ width: '12%' }}>Salario</th>
+                <th style={{ width: '20%' }}>Nombre del puesto</th>
+                <th style={{ width: '18%' }}>Empresa</th>
+                <th style={{ width: '14%' }}>Salario</th>
                 <th style={{ width: '8%' }}>Moneda</th>
-                <th style={{ width: '10%' }}>Fecha registro</th>
-                <th style={{ width: '8%' }}>Tipo</th>
+                <th style={{ width: '12%' }}>Fecha registro</th>
+                <th style={{ width: '10%' }}>Tipo</th>
                 <th style={{ width: '8%' }}>Postulaciones</th>
             </tr>
             </thead>
             <tbody>
             {puestos.map((p, i) => (
-                <tr key={p.id}>
+                <tr key={p.id ?? i}>
                     <td>{i + 1}</td>
-                    <td>{p.nombre}</td>
-                    <td>{p.empresaNombre}</td>
-                    <td>{Number(p.salario).toLocaleString('es-CR', { minimumFractionDigits: 2 })}</td>
-                    <td>{p.moneda}</td>
-                    <td>{p.fechaRegistro ? (() => { const [y,m,d] = p.fechaRegistro.split('-'); return `${d}/${m}/${y}`; })() : ''}</td>
+                    {/* nombre puede venir como p.nombre */}
+                    <td>{p.nombre ?? '—'}</td>
+                    {/* empresaNombre es la clave que manda el backend */}
+                    <td>{p.empresaNombre ?? '—'}</td>
+                    {/* CORRECCIÓN: usar formatSalario robusto */}
+                    <td>{formatSalario(p.salario, p.moneda)}</td>
+                    <td>{p.moneda ?? '—'}</td>
+                    {/* CORRECCIÓN: usar formatFecha robusto */}
+                    <td>{formatFecha(p.fechaRegistro)}</td>
                     <td>
                             <span className={`badge ${p.esPublico ? 'bg-success' : 'bg-warning text-dark'}`}>
                                 {p.esPublico ? 'Público' : 'Privado'}
@@ -51,17 +75,29 @@ function TablaReporte({ puestos }) {
 
 export default function Reportes() {
     const { token } = useAuth();
+
+
     const [reporteCompleto, setReporteCompleto] = useState(null);
     const [reporteFiltrado, setReporteFiltrado] = useState(null);
-    const [cargando, setCargando]   = useState(true);
-    const [mesFiltro, setMesFiltro] = useState(new Date().getMonth() + 1);
-    const [anioFiltro, setAnioFiltro] = useState(new Date().getFullYear());
+    const [cargando, setCargando]       = useState(true);
+    const [mesFiltro, setMesFiltro]     = useState(new Date().getMonth() + 1);
+    const [anioFiltro, setAnioFiltro]   = useState(new Date().getFullYear());
 
     useEffect(() => {
-        getReportes(token)
-            .then(data => setReporteCompleto(data))
-            .finally(() => setCargando(false));
+        cargarTodos();
     }, []);
+
+
+    const cargarTodos = async () => {
+        setCargando(true);
+        setReporteFiltrado(null);
+        try {
+            const data = await getReportes(token);
+            setReporteCompleto(data);
+        } finally {
+            setCargando(false);
+        }
+    };
 
     const handleFiltrar = async (e) => {
         e.preventDefault();
@@ -75,21 +111,9 @@ export default function Reportes() {
         }
     };
 
-    const handleVerTodos = async () => {
-        setCargando(true);
-        setReporteFiltrado(null);
-        try {
-            const data = await getReportes(token);
-            setReporteCompleto(data);
-        } finally {
-            setCargando(false);
-        }
-    };
+    const nombreMesFiltro = MESES.find(m => m.v === Number(mesFiltro))?.n ?? '';
 
-    const nombreMesFiltro = MESES.find(m => m.v === Number(mesFiltro))?.n || '';
-    const totalPuestos = reporteCompleto
-        ? Object.values(reporteCompleto).reduce((acc, lista) => acc + lista.length, 0)
-        : 0;
+    const totalPuestos = reporteCompleto ? Object.values(reporteCompleto).reduce((acc, lista) => acc + (Array.isArray(lista) ? lista.length : 0), 0) : 0;
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
@@ -104,13 +128,16 @@ export default function Reportes() {
                     </button>
                 </div>
 
+                {/* ── Filtros ─────────────────────────────────── */}
                 <div className="border rounded p-3 bg-light mb-4 no-print">
                     <form onSubmit={handleFiltrar} className="row g-2 align-items-end">
                         <div className="col-auto">
                             <label className="form-label fw-semibold mb-1">Mes</label>
-                            <select className="form-select form-select-sm"
-                                    value={mesFiltro}
-                                    onChange={e => setMesFiltro(Number(e.target.value))}>
+                            <select
+                                className="form-select form-select-sm"
+                                value={mesFiltro}
+                                onChange={e => setMesFiltro(Number(e.target.value))}
+                            >
                                 {MESES.map(m => (
                                     <option key={m.v} value={m.v}>{m.n}</option>
                                 ))}
@@ -118,17 +145,25 @@ export default function Reportes() {
                         </div>
                         <div className="col-auto">
                             <label className="form-label fw-semibold mb-1">Año</label>
-                            <input type="number" className="form-control form-control-sm"
-                                   value={anioFiltro}
-                                   onChange={e => setAnioFiltro(Number(e.target.value))}
-                                   min="2026" max="2030" />
+                            <input
+                                type="number"
+                                className="form-control form-control-sm"
+                                value={anioFiltro}
+                                onChange={e => setAnioFiltro(Number(e.target.value))}
+                                min="2024" max="2035"
+                            />
                         </div>
                         <div className="col-auto">
-                            <button type="submit" className="btn btn-primary btn-sm">Filtrar</button>
+                            <button type="submit" className="btn btn-primary btn-sm">
+                                Filtrar
+                            </button>
                         </div>
                         <div className="col-auto">
-                            <button type="button" className="btn btn-outline-secondary btn-sm"
-                                    onClick={handleVerTodos}>
+                            <button
+                                type="button"
+                                className="btn btn-outline-secondary btn-sm"
+                                onClick={cargarTodos}
+                            >
                                 Ver todos
                             </button>
                         </div>
@@ -137,20 +172,26 @@ export default function Reportes() {
 
                 {cargando && <LoadingSpinner />}
 
-                {/* Reporte filtrado por mes */}
+                {/* ── Reporte filtrado por mes/año ─────────────── */}
                 {!cargando && reporteFiltrado !== null && (
                     <>
                         {reporteFiltrado.error && (
                             <div className="alert alert-warning">{reporteFiltrado.error}</div>
                         )}
-                        {!reporteFiltrado.error && reporteFiltrado.puestos?.length === 0 && (
-                            <div className="alert alert-warning">No hay puestos registrados en ese mes.</div>
+
+                        {!reporteFiltrado.error && (!reporteFiltrado.puestos || reporteFiltrado.puestos.length === 0) && (
+                            <div className="alert alert-warning">
+                                No hay puestos con postulaciones en ese mes.
+                            </div>
                         )}
+
                         {!reporteFiltrado.error && reporteFiltrado.puestos?.length > 0 && (
                             <div className="reporte-card">
                                 <div className="mes-titulo">
                                     {nombreMesFiltro} {anioFiltro}
-                                    <span className="total-badge">{reporteFiltrado.total} puesto(s)</span>
+                                    <span className="total-badge">
+                                        {reporteFiltrado.total} puesto(s)
+                                    </span>
                                 </div>
                                 <TablaReporte puestos={reporteFiltrado.puestos} />
                             </div>
@@ -158,26 +199,34 @@ export default function Reportes() {
                     </>
                 )}
 
-                {/* Reporte completo todos los meses */}
+                {/* ── Reporte completo (todos los meses) ──────── */}
                 {!cargando && reporteFiltrado === null && reporteCompleto !== null && (
                     <>
                         {Object.keys(reporteCompleto).length === 0 && (
-                            <div className="alert alert-info">No hay puestos registrados en el sistema aún.</div>
+                            <div className="alert alert-info">
+                                No hay puestos con postulaciones registradas en el sistema aún.
+                            </div>
                         )}
+
                         {Object.keys(reporteCompleto).length > 0 && (
                             <>
                                 <div className="resumen-total">
-                                    <strong>Total de meses con actividad:</strong> {Object.keys(reporteCompleto).length} mes(es)
+                                    <strong>Total de meses con actividad:</strong>{' '}
+                                    {Object.keys(reporteCompleto).length} mes(es)
                                     &nbsp;|&nbsp;
-                                    <strong>Total de puestos registrados:</strong> {totalPuestos}
+                                    <strong>Total de puestos registrados:</strong>{' '}
+                                    {totalPuestos}
                                 </div>
+
                                 {Object.entries(reporteCompleto).map(([mes, puestos]) => (
                                     <div key={mes} className="reporte-card">
                                         <div className="mes-titulo">
                                             {mes}
-                                            <span className="total-badge">{puestos.length} puesto(s)</span>
+                                            <span className="total-badge">
+                                                {Array.isArray(puestos) ? puestos.length : 0} puesto(s)
+                                            </span>
                                         </div>
-                                        <TablaReporte puestos={puestos} />
+                                        <TablaReporte puestos={Array.isArray(puestos) ? puestos : []} />
                                     </div>
                                 ))}
                             </>

@@ -17,14 +17,17 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/publico")
 public class PublicoController {
-    @Autowired private ServiceP serviceP;
 
+    @Autowired private ServiceP serviceP;
     @Autowired private ServiceC serviceC;
 
 
     @GetMapping("/puestos/recientes")
     public ResponseEntity<?> puestosRecientes() {
-        List<PuestoResponseDTO> puestos = serviceP.getUltimosPuestosPublicos().stream().map(this::toDTO).collect(Collectors.toList());
+        List<PuestoResponseDTO> puestos = serviceP.getUltimosPuestosPublicos()
+                .stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
         return ResponseEntity.ok(puestos);
     }
 
@@ -33,30 +36,17 @@ public class PublicoController {
         @SuppressWarnings("unchecked")
         List<Integer> ids = (List<Integer>) body.get("caracteristicaIds");
         String moneda = (String) body.get("moneda");
-        List<PuestoResponseDTO> resultados = serviceP.buscarPuestosPublicos(ids, moneda).stream().map(this::toDTO).collect(Collectors.toList());
+        List<PuestoResponseDTO> resultados = serviceP
+                .buscarPuestosPublicos(ids, moneda)
+                .stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+
         return ResponseEntity.ok(resultados);
     }
-// prueba
-//    @GetMapping("/caracteristicas")
-//    public ResponseEntity<?> caracteristicas()
-//    {
-//        List<Map<String, Object>> arbol = serviceC.getArbolOrdenado().stream().map(c -> {
-//            List<Caracteristica> ruta = serviceC.buildRuta(c);
-//            int nivel = ruta.size() - 1;
-//            return Map.of(
-//                    "id", (Object) c.getId(),
-//                    "nombre", c.getNombre(),
-//                    "nivel", nivel,
-//                    "padreId", c.getPadre() != null ? c.getPadre().getId() : null
-//            );
-//        }).collect(Collectors.toList());
-//
-//        return  ResponseEntity.ok(arbol);
-//    }
 
     @GetMapping("/caracteristicas")
-    public ResponseEntity<?> caracteristicas()
-    {
+    public ResponseEntity<?> caracteristicas() {
         List<Map<String, Object>> arbol = serviceC.getArbolOrdenado().stream().map(c -> {
             List<Caracteristica> ruta = serviceC.buildRuta(c);
             int nivel = ruta.size() - 1;
@@ -74,6 +64,18 @@ public class PublicoController {
     }
 
     private PuestoResponseDTO toDTO(Puesto p) {
+        List<Map<String, Object>> requisitos = serviceP
+                .findRequisitosByPuesto(p)
+                .stream()
+                .map(r -> {
+                    Map<String, Object> req = new java.util.LinkedHashMap<>();
+                    req.put("caracteristicaNombre", r.getCaracteristica().getNombre());
+                    req.put("rutaCompleta", serviceC.buildRutaString(r.getCaracteristica()));
+                    req.put("nivel", r.getNivel());
+                    return req;
+                })
+                .collect(Collectors.toList());
+
         return new PuestoResponseDTO(
                 p.getId(),
                 p.getNombre(),
@@ -83,7 +85,8 @@ public class PublicoController {
                 p.getEsPublico(),
                 p.getActivo(),
                 p.getFechaRegistro().toString(),
-                p.getEmpresa().getNombre()
+                p.getEmpresa().getNombre(),
+                requisitos
         );
     }
 }

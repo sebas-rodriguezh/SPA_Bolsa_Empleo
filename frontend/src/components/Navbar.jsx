@@ -27,66 +27,99 @@ export default function Navbar() {
                 <div className="collapse navbar-collapse" id="navbarMain">
                     <ul className="navbar-nav me-auto mb-2 mb-lg-0">
 
+                        {/* ── ADMIN ───────────────────────────────────────── */}
                         {rol === 'ADMIN' && <>
                             <li className="nav-item">
-                                <Link className={isActive('/admin/dashboard')} to="/admin/dashboard">Dashboard</Link>
+                                <Link className={isActive('/admin/dashboard')} to="/admin/dashboard">
+                                    Dashboard
+                                </Link>
                             </li>
                             <li className="nav-item">
-                                <Link className={isActive('/admin/empresas/pendientes')} to="/admin/empresas/pendientes">Empresas pendientes</Link>
+                                <Link className={isActive('/admin/empresas/pendientes')} to="/admin/empresas/pendientes">
+                                    Empresas pendientes
+                                </Link>
                             </li>
                             <li className="nav-item">
-                                <Link className={isActive('/admin/oferentes/pendientes')} to="/admin/oferentes/pendientes">Oferentes pendientes</Link>
+                                <Link className={isActive('/admin/oferentes/pendientes')} to="/admin/oferentes/pendientes">
+                                    Oferentes pendientes
+                                </Link>
                             </li>
                             <li className="nav-item">
-                                <Link className={isActive('/admin/caracteristicas')} to="/admin/caracteristicas">Características</Link>
+                                <Link className={isActive('/admin/caracteristicas')} to="/admin/caracteristicas">
+                                    Características
+                                </Link>
                             </li>
                             <li className="nav-item">
-                                <Link className={isActive('/admin/reportes')} to="/admin/reportes">Reportes</Link>
+                                <Link className={isActive('/admin/reportes')} to="/admin/reportes">
+                                    Reportes
+                                </Link>
                             </li>
                         </>}
 
+                        {}
                         {rol === 'EMPRESA' && <>
                             <li className="nav-item">
-                                <Link className={isActive('/empresa/dashboard')} to="/empresa/dashboard">Dashboard</Link>
+                                <Link className={isActive('/empresa/dashboard')} to="/empresa/dashboard">
+                                    Dashboard
+                                </Link>
                             </li>
                             <li className="nav-item">
-                                <Link className={isActive('/empresa/puestos')} to="/empresa/puestos">Mis puestos</Link>
+                                <Link className={isActive('/empresa/puestos')} to="/empresa/puestos">
+                                    Mis puestos
+                                </Link>
                             </li>
                             <li className="nav-item">
-                                <Link className={isActive('/empresa/puestos/nuevo')} to="/empresa/puestos/nuevo">Publicar puesto</Link>
+                                <Link className={isActive('/empresa/puestos/nuevo')} to="/empresa/puestos/nuevo">
+                                    Publicar puesto
+                                </Link>
                             </li>
                             <li className="nav-item">
-                                <Link className={isActive('/buscar-puestos')} to="/buscar-puestos">Ver puestos</Link>
-                            </li>
-                            <li className="nav-item">
-                                <Link className={isActive('/empresa/reportes')} to="/empresa/reportes">Reportes</Link>
+                                <Link className={isActive('/empresa/reportes')} to="/empresa/reportes">
+                                    Reportes
+                                </Link>
                             </li>
                         </>}
 
+                        {/* ── OFERENTE ────────────────────────────────────── */}
                         {rol === 'OFERENTE' && <>
                             <li className="nav-item">
-                                <Link className={isActive('/oferente/dashboard')} to="/oferente/dashboard">Dashboard</Link>
+                                <Link className={isActive('/oferente/dashboard')} to="/oferente/dashboard">
+                                    Dashboard
+                                </Link>
                             </li>
                             <li className="nav-item">
-                                <Link className={isActive('/oferente/habilidades')} to="/oferente/habilidades">Mis habilidades</Link>
+                                <Link className={isActive('/oferente/habilidades')} to="/oferente/habilidades">
+                                    Mis habilidades
+                                </Link>
                             </li>
                             <li className="nav-item">
-                                <Link className={isActive('/oferente/cv')} to="/oferente/cv">Mi CV</Link>
+                                <Link className={isActive('/oferente/cv')} to="/oferente/cv">
+                                    Mi CV
+                                </Link>
                             </li>
                             <li className="nav-item">
-                                <Link className={isActive('/buscar-puestos')} to="/buscar-puestos">Buscar puestos</Link>
+                                <Link className={isActive('/buscar-puestos')} to="/buscar-puestos">
+                                    Buscar puestos
+                                </Link>
                             </li>
                             <li className="nav-item">
-                                <Link className={isActive('/oferente/postulacion')} to="/oferente/postulacion">Postularme</Link>
+                                <Link className={isActive('/oferente/postulacion')} to="/oferente/postulacion">
+                                    Postularme
+                                </Link>
                             </li>
                             <li className="nav-item">
-                                <Link className={isActive('/oferente/postulaciones')} to="/oferente/postulaciones">Mis postulaciones</Link>
+                                <Link className={isActive('/oferente/postulaciones')} to="/oferente/postulaciones">
+                                    Mis postulaciones
+                                </Link>
                             </li>
                         </>}
 
+                        {/* ── Sin sesión: solo búsqueda pública ───────────── */}
                         {!rol && <>
                             <li className="nav-item">
-                                <Link className={isActive('/buscar-puestos')} to="/buscar-puestos">Buscar puestos</Link>
+                                <Link className={isActive('/buscar-puestos')} to="/buscar-puestos">
+                                    Buscar puestos
+                                </Link>
                             </li>
                         </>}
 
@@ -103,8 +136,12 @@ export default function Navbar() {
                         )}
                         {!correo && (
                             <>
-                                <Link className="btn btn-sm btn-outline-light me-1" to="/login">Iniciar sesión</Link>
-                                <Link className="btn btn-sm btn-primary" to="/registro">Registrarse</Link>
+                                <Link className="btn btn-sm btn-outline-light me-1" to="/login">
+                                    Iniciar sesión
+                                </Link>
+                                <Link className="btn btn-sm btn-primary" to="/registro">
+                                    Registrarse
+                                </Link>
                             </>
                         )}
                     </div>

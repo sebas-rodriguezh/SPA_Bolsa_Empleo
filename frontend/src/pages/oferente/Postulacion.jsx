@@ -105,6 +105,23 @@ export default function Postulacion() {
                                 </span>
                             </div>
 
+                            {/* ── Tooltip de características dinámico ── */}
+                            <div className="tooltip-caracteristicas">
+                                <h4>{puesto.nombre}</h4>
+                                {Array.isArray(puesto.requisitos) && puesto.requisitos.length > 0 ? (
+                                    <ul>
+                                        {puesto.requisitos.map((r, i) => (
+                                            <li key={i}>
+                                                {r.caracteristicaNombre ?? r.nombre ?? r.caracteristica}
+                                                {r.nivel ? ` (nivel ${r.nivel})` : ''}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <p className="tooltip-sin-requisitos">Ver detalle</p>
+                                )}
+                            </div>
+
                             {puesto.yaPostulado ? (
                                 <div style={{ textAlign: 'center', fontSize: '0.85rem', color: '#28a745', padding: '0.4rem', marginTop: 'auto' }}>
                                     ✓ Ya te postulaste

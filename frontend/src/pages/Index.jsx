@@ -70,7 +70,18 @@ export default function Index() {
                             </div>
                             <div className="tooltip-caracteristicas">
                                 <h4>{puesto.nombre}</h4>
-                                <p className="tooltip-sin-requisitos">Ver detalle</p>
+                                {Array.isArray(puesto.requisitos) && puesto.requisitos.length > 0 ? (
+                                    <ul>
+                                        {puesto.requisitos.map((r, i) => (
+                                            <li key={i}>
+                                                {r.caracteristicaNombre ?? r.nombre ?? r.caracteristica}
+                                                {r.nivel ? ` (nivel ${r.nivel})` : ''}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <p className="tooltip-sin-requisitos">Ver detalle</p>
+                                )}
                             </div>
                         </div>
                     ))}
