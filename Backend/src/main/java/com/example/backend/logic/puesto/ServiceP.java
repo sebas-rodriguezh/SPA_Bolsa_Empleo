@@ -7,6 +7,7 @@ import com.example.backend.logic.empresa.Empresa;
 import com.example.backend.logic.oferente.Oferente;
 import com.example.backend.logic.puestoCaracteristica.PuestoCaracteristica;
 import org.springframework.beans.factory.annotation.Autowired;
+import com.example.backend.logic.oferenteHabilidad.OferenteHabilidad;
 
 import java.time.LocalDate;
 import java.time.format.TextStyle;
@@ -90,16 +91,36 @@ public class ServiceP {
 
 
     //Cambio
-    public List<Puesto> buscarPuestosParaOferente(List<Integer> caracteristicaIds, String moneda) {
+    public List<Puesto> buscarPuestosParaOferente(List<Integer> caracteristicaIds, String moneda, Oferente oferente) {
         if (caracteristicaIds == null || caracteristicaIds.isEmpty())
             return new ArrayList<>();
 
         List<Integer> expandidos = serviceC.expandirConDescendientes(caracteristicaIds);
-        List<Puesto> resultados = puestoRepository.findDistinctByActivoTrueAndRequisitosCaracteristicaIdIn(expandidos);
+
+        List<OferenteHabilidad> habilidades = oferenteHabilidadRepository.findByOferente(oferente);
+        Map<Integer, Integer> nivelPorCaracteristica = habilidades.stream()
+                .collect(Collectors.toMap(
+                        h -> h.getCaracteristica().getId(),
+                        OferenteHabilidad::getNivel
+                ));
+
+        List<Puesto> candidatos = puestoRepository.findDistinctByActivoTrueAndRequisitosCaracteristicaIdIn(expandidos);
+
+        List<Puesto> resultados = candidatos.stream()
+                .filter(puesto -> {
+                    List<PuestoCaracteristica> requisitos = puestoCaracteristicaRepository.findByPuesto(puesto);
+                    return requisitos.stream()
+                            .filter(req -> expandidos.contains(req.getCaracteristica().getId()))
+                            .anyMatch(req -> {
+                                Integer nivelOferente = nivelPorCaracteristica.get(req.getCaracteristica().getId());
+                                return nivelOferente != null && nivelOferente >= req.getNivel();
+                            });
+                })
+                .collect(Collectors.toList());
 
         if (moneda == null || moneda.isBlank()) return resultados;
 
-        return resultados.stream().filter(p -> p.getMoneda().equals(moneda)).collect(toList());
+        return candidatos.stream().filter(p -> p.getMoneda().equals(moneda)).collect(toList());
     }
 
 
@@ -143,11 +164,20 @@ public class ServiceP {
             if (!oferente.getAutorizado()) continue;
 
             int cumplidos = 0;
+            int exceso = 0;
+            List<DetalleRequisito> detalle = new ArrayList<>();
+
             for (PuestoCaracteristica req : requisitos) {
                 var habilidad = oferenteHabilidadRepository.findByOferenteAndCaracteristica(oferente, req.getCaracteristica());
                 if (habilidad.isPresent() && habilidad.get().getNivel() >= req.getNivel())
                 {
                     cumplidos++;
+                    exceso += habilidad.get().getNivel() - req.getNivel();
+                    detalle.add(new DetalleRequisito(
+                            req.getCaracteristica().getNombre(),
+                            habilidad.get().getNivel(),
+                            req.getNivel()
+                    ));
                 }
             }
 
@@ -155,7 +185,7 @@ public class ServiceP {
 
             if (incluir)
             {
-                resultados.add(new CandidatoResultado(oferente, cumplidos, requisitos.size()));
+                resultados.add(new CandidatoResultado(oferente, cumplidos, requisitos.size(), exceso, detalle));
             }
         }
 

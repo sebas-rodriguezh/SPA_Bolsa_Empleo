@@ -227,7 +227,7 @@ public class OferenteController {
         if (ids == null || ids.isEmpty())
             return ResponseEntity.badRequest().body(Map.of("error", "Debe seleccionar al menos una característica"));
 
-        List<Map<String, Object>> resultados = serviceP.buscarPuestosParaOferente(ids, moneda)
+        List<Map<String, Object>> resultados = serviceP.buscarPuestosParaOferente(ids, moneda, oferente)
                 .stream()
                 .map(p -> toDTOConYaPostulado(p, oferente))
                 .collect(Collectors.toList());
