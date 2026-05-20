@@ -64,6 +64,7 @@ export default function Candidatos() {
                             <th>Oferente</th>
                             <th>Requisitos cumplidos</th>
                             <th>% Coincidencia</th>
+                            <th>Detalle</th>
                             <th>Acciones</th>
                         </tr>
                         </thead>
@@ -73,6 +74,13 @@ export default function Candidatos() {
                                 <td>{c.nombre} {c.primerApellido}</td>
                                 <td>{c.cumplidos} / {c.total}</td>
                                 <td>{Number(c.porcentaje).toFixed(2)}%</td>
+                                <td>
+                                    {Array.isArray(c.detalle) && c.detalle.map((d, i) => (
+                                        <div key={i} className="small">
+                                            {d.nombreCaracteristica}: tiene <strong>{d.nivelTiene}</strong> / pide <strong>{d.nivelPide}</strong>
+                                        </div>
+                                    ))}
+                                </td>
                                 <td>
                                     <Link
                                         to={`/empresa/candidatos/${c.oferenteId}?puestoId=${id}`}

@@ -219,7 +219,8 @@ public class EmpresaController {
                         c.getCumplidos(),
                         c.getTotal(),
                         c.getPorcentaje(),
-                        c.getOferente().getRutaCurriculum()))
+                        c.getOferente().getRutaCurriculum(),
+                        c.getDetalle()))
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(candidatos);
