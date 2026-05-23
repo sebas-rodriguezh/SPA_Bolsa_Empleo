@@ -57,7 +57,6 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/publico/**").permitAll()
                         .requestMatchers("/error").permitAll()
-                        .requestMatchers("/", "/index.html", "/assets/**", "/*.svg", "/*.js", "/*.css").permitAll()
 
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/empresa/**").hasRole("EMPRESA")
