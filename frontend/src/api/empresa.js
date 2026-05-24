@@ -48,6 +48,15 @@ export async function agregarRequisito(puestoId, datos, token) {
     return res.json();
 }
 
+export async function editarPuesto(id, datos, token) {
+    const res = await fetch(`${BASE}/api/empresa/puestos/${id}`, {
+        method: 'PUT',
+        headers: headers(token),
+        body: JSON.stringify(datos)
+    });
+    return res.json();
+}
+
 export async function quitarRequisito(puestoId, pcId, token) {
     const res = await fetch(`${BASE}/api/empresa/puestos/${puestoId}/requisitos/${pcId}`, {
         method: 'DELETE',
@@ -77,3 +86,4 @@ export async function getReporteEmpresa(token, puestoId = null) {
     const res = await fetch(url, { headers: headers(token) });
     return res.json();
 }
+

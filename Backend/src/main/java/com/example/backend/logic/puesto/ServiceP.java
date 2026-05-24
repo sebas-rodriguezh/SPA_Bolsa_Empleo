@@ -73,8 +73,17 @@ public class ServiceP {
         p.setFechaRegistro(LocalDate.now());
         return puestoRepository.save(p);
     }
+    //actualizar puesto existente
+    // Nuevo método para actualizar un puesto existente
+    public Puesto actualizarPuesto(Puesto puesto, String nombre, String descripcion, Double salario, Boolean esPublico, String moneda) {
+        puesto.setNombre(nombre.trim());
+        puesto.setDescripcion(descripcion.trim());
+        puesto.setSalario(salario);
+        puesto.setEsPublico(esPublico);
+        puesto.setMoneda(moneda != null ? moneda : "CRC");
 
-
+        return puestoRepository.save(puesto);
+    }
     //Cambio
     public List<Puesto> buscarPuestosPublicos(List<Integer> caracteristicaIds, String moneda)
     {

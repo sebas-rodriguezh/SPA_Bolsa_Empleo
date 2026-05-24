@@ -29,6 +29,7 @@ import MisPostulaciones  from './pages/oferente/MisPostulaciones';
 import EmpresaDashboard  from './pages/empresa/Dashboard';
 import MisPuestos        from './pages/empresa/MisPuestos';
 import NuevoPuesto       from './pages/empresa/NuevoPuesto';
+import EditarPuesto from './pages/empresa/EditarPuesto';
 import Requisitos        from './pages/empresa/Requisitos';
 import Candidatos        from './pages/empresa/Candidatos';
 import DetalleCandidato  from './pages/empresa/DetalleCandidato';
@@ -77,6 +78,7 @@ export default function App() {
               <Route path="puestos/:id/postulaciones"       element={<Postulaciones />} />
               <Route path="candidatos/:oferenteId"          element={<DetalleCandidato />} />
               <Route path="reportes"                        element={<Reporte />} />
+              <Route path="puestos/:id/editar"              element={<EditarPuesto />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />

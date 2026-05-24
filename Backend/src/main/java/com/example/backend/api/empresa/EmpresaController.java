@@ -108,6 +108,50 @@ public class EmpresaController {
         ));
     }
 
+    @PutMapping("/puestos/{id}")
+    public ResponseEntity<?> editarPuesto(@PathVariable Integer id, @RequestBody NuevoPuestoDTO dto, Authentication auth) {
+        Empresa empresa = getEmpresa(auth);
+        if (empresa == null)
+            return ResponseEntity.status(401).body(Map.of("error", "Empresa no encontrada"));
+
+        //Validaciones del formulario de entrada
+        if (dto.getNombre() == null || dto.getNombre().isBlank())
+            return ResponseEntity.badRequest().body(Map.of("error", "El nombre del puesto no puede estar vacío"));
+        if (dto.getDescripcion() == null || dto.getDescripcion().trim().length() < 10)
+            return ResponseEntity.badRequest().body(Map.of("error", "La descripción debe tener al menos 10 caracteres"));
+        if (dto.getSalario() == null || dto.getSalario() <= 0)
+            return ResponseEntity.badRequest().body(Map.of("error", "El salario debe ser mayor a 0"));
+        if (dto.getEsPublico() == null)
+            return ResponseEntity.badRequest().body(Map.of("error", "Debe indicar si el puesto es público o privado"));
+
+        //Buscar el puesto y asegurar que pertenezca a la empresa que está logueada
+        Puesto puestoExistente = serviceP.findById(id)
+                .filter(p -> p.getEmpresa().getId().equals(empresa.getId()))
+                .orElse(null);
+
+        if (puestoExistente == null)
+            return ResponseEntity.status(404).body(Map.of("error", "Puesto no encontrado o no pertenece a esta empresa"));
+
+        //Invocar al servicio para actualizar y guardar los cambios
+        try {
+            serviceP.actualizarPuesto(
+                    puestoExistente,
+                    dto.getNombre(),
+                    dto.getDescripcion(),
+                    dto.getSalario(),
+                    dto.getEsPublico(),
+                    dto.getMoneda()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Error interno al actualizar el puesto en la base de datos"));
+        }
+
+        return ResponseEntity.ok(Map.of(
+                "id", puestoExistente.getId(),
+                "mensaje", "Puesto actualizado correctamente."
+        ));
+    }
+
     @PostMapping("/puestos/{id}/desactivar")
     public ResponseEntity<?> desactivarPuesto(@PathVariable Integer id, Authentication auth) {
         Empresa empresa = getEmpresa(auth);
@@ -353,4 +397,5 @@ public class EmpresaController {
                 "postulaciones", postulaciones
         ));
     }
+
 }

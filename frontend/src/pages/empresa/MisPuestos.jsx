@@ -98,10 +98,13 @@ export default function MisPuestos() {
                                             Buscar candidatos
                                         </Link>
                                     )}
+                                    <Link to={`/empresa/puestos/${p.id}/editar`}
+                                          className="btn btn-sm btn-outline-secondary">
+                                        Editar
+                                    </Link>
                                     <Link
                                         to={`/empresa/puestos/${p.id}/postulaciones`}
-                                        className="btn btn-sm btn-outline-primary"
-                                    >
+                                        className="btn btn-sm btn-outline-primary">
                                         Ver postulaciones
                                     </Link>
                                 </td>
