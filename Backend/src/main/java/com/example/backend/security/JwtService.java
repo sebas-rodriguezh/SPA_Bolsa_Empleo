@@ -24,7 +24,7 @@ public class JwtService {
     public String generateToken(String correo, String rol)
     {
         return Jwts.builder()
-                .subject(correo)
+                .subject(correo + "::" + rol)
                 .claim("rol", rol) // EMPRESA, OFERENTE o ADMIN
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + jwtExpiration))
@@ -33,7 +33,14 @@ public class JwtService {
     }
 
     public String extractUsername(String token) {
-        return extractAllClaims(token).getSubject();
+        String subject = extractAllClaims(token).getSubject();
+        return subject.split("::")[0];
+    }
+
+    public String extractRolFromSubject(String token) {
+        String subject = extractAllClaims(token).getSubject();
+        String[] parts = subject.split("::");
+        return parts.length > 1 ? parts[1] : null;
     }
 
     public String extractRol(String token) {
@@ -41,8 +48,8 @@ public class JwtService {
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
-        String username = extractUsername(token);
-        return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+        String subject = extractAllClaims(token).getSubject();
+        return subject.equals(userDetails.getUsername()) && !isTokenExpired(token);
     }
 
     private boolean isTokenExpired(String token) {
@@ -60,5 +67,9 @@ public class JwtService {
     private SecretKey getSigningKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    public static String extraerCorreo(String nombre) {
+        return nombre.contains("::") ? nombre.split("::")[0] : nombre;
     }
 }

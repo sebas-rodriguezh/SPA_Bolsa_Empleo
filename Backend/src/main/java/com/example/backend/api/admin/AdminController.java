@@ -5,6 +5,7 @@ import com.example.backend.logic.administrador.ServiceA;
 import com.example.backend.logic.caracteristica.ServiceC;
 import com.example.backend.logic.empresa.ServiceE;
 import com.example.backend.logic.oferente.ServiceO;
+import com.example.backend.security.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -28,8 +29,8 @@ public class AdminController {
     @GetMapping("/dashboard")
     public ResponseEntity<?> dashboard(Authentication auth) {
         return ResponseEntity.ok(Map.of(
-                "correo", auth.getName(),
-                "rol",    "ADMIN"
+                "correo", JwtService.extraerCorreo(auth.getName()),
+                "rol", "ADMIN"
         ));
     }
 

@@ -15,6 +15,7 @@ import com.example.backend.logic.puesto.CandidatoResultado;
 import com.example.backend.logic.puesto.Puesto;
 import com.example.backend.logic.puesto.ServiceP;
 import com.example.backend.logic.puestoCaracteristica.PuestoCaracteristica;
+import com.example.backend.security.JwtService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -37,7 +38,7 @@ public class EmpresaController {
     @Autowired private ServicePO servicePO;
 
     private Empresa getEmpresa(Authentication auth) {
-        return serviceE.findByCorreo(auth.getName());
+        return serviceE.findByCorreo(JwtService.extraerCorreo(auth.getName()));
     }
 
     @GetMapping("/dashboard")

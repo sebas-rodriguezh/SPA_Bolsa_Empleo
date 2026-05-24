@@ -25,33 +25,52 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Autowired private AdministradorRepository administradorRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String correo) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String identificador) throws UsernameNotFoundException {
 
-        Empresa empresa = empresaRepository.findByCorreo(correo);
-        if (empresa != null) {
-            return User.builder()
-                    .username(empresa.getCorreo())
-                    .password(empresa.getClave())
-                    .authorities(List.of(new SimpleGrantedAuthority("ROLE_EMPRESA")))
-                    .build();
+        String correo;
+        String rol;
+
+        if (identificador.contains("::")) {
+            String[] parts = identificador.split("::");
+            correo = parts[0];
+            rol = parts[1];
+        } else {
+            correo = identificador;
+            rol = null;
         }
 
-        Oferente oferente = oferenteRepository.findByCorreo(correo);
-        if (oferente != null) {
-            return User.builder()
-                    .username(oferente.getCorreo())
-                    .password(oferente.getClave())
-                    .authorities(List.of(new SimpleGrantedAuthority("ROLE_OFERENTE")))
-                    .build();
+        if (rol != null && rol.equals("EMPRESA")) {
+            Empresa empresa = empresaRepository.findByCorreo(correo);
+            if (empresa != null) {
+                return User.builder()
+                        .username(empresa.getCorreo() + "::EMPRESA")
+                        .password(empresa.getClave())
+                        .authorities(List.of(new SimpleGrantedAuthority("ROLE_EMPRESA")))
+                        .build();
+            }
         }
 
-        Administrador admin = administradorRepository.findByCorreo(correo);
-        if (admin != null) {
-            return User.builder()
-                    .username(admin.getCorreo())
-                    .password(admin.getClave())
-                    .authorities(List.of(new SimpleGrantedAuthority("ROLE_ADMIN")))
-                    .build();
+        if (rol != null && rol.equals("OFERENTE")) {
+            Oferente oferente = oferenteRepository.findByCorreo(correo);
+            if (oferente != null) {
+                return User.builder()
+                        .username(oferente.getCorreo() + "::OFERENTE")
+                        .password(oferente.getClave())
+                        .authorities(List.of(new SimpleGrantedAuthority("ROLE_OFERENTE")))
+                        .build();
+            }
+        }
+
+
+        if (rol != null && rol.equals("ADMIN")) {
+            Administrador admin = administradorRepository.findByCorreo(correo);
+            if (admin != null) {
+                return User.builder()
+                        .username(admin.getCorreo() + "::ADMIN")
+                        .password(admin.getClave())
+                        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ADMIN")))
+                        .build();
+            }
         }
 
         throw new UsernameNotFoundException("Usuario no encontrado: " + correo);
