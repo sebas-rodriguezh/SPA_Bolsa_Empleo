@@ -95,6 +95,11 @@ public class AuthController {
         if (error != null)
             return ResponseEntity.badRequest().body(Map.of("error", error));
 
+        if (serviceO.findByCorreo(dto.getCorreo().trim()) != null)
+            return ResponseEntity.badRequest().body(Map.of("error", "Ese correo ya esta registrado"));
+        if (serviceA.findByCorreo(dto.getCorreo().trim()) != null)
+            return ResponseEntity.badRequest().body(Map.of("error", "Ese correo ya esta registrado"));
+
         Empresa empresa = new Empresa();
         empresa.setNombre(dto.getNombre().trim());
         empresa.setLocalizacion(dto.getLocalizacion().trim());
@@ -140,6 +145,11 @@ public class AuthController {
         String error = serviceO.validarRegistro(dto.getCorreo(), dto.getIdentificacion());
         if (error != null)
             return ResponseEntity.badRequest().body(Map.of("error", error));
+
+        if (serviceE.findByCorreo(dto.getCorreo().trim()) != null)
+            return ResponseEntity.badRequest().body(Map.of("error", "Ese correo ya esta registrado"));
+        if (serviceA.findByCorreo(dto.getCorreo().trim()) != null)
+            return ResponseEntity.badRequest().body(Map.of("error", "Ese correo ya esta registrado"));
 
         Oferente oferente = new Oferente();
         oferente.setIdentificacion(dto.getIdentificacion().trim());

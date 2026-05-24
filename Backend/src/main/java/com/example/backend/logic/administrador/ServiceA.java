@@ -136,4 +136,8 @@ public class ServiceA {
                         )
                 ));
     }
+
+    public Administrador findByCorreo(String correo) {
+        return administradorRepository.findByCorreo(correo);
+    }
 }

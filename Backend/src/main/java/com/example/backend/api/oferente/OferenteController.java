@@ -11,6 +11,7 @@ import com.example.backend.logic.oferenteHabilidad.ServiceOH;
 import com.example.backend.logic.postulacion.ServicePO;
 import com.example.backend.logic.puesto.Puesto;
 import com.example.backend.logic.puesto.ServiceP;
+import com.example.backend.security.JwtService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +33,7 @@ public class OferenteController {
     @Autowired private ServicePO servicePO;
 
     private Oferente getOferente(Authentication auth) {
-        return serviceO.findByCorreo(auth.getName());
+        return serviceO.findByCorreo(JwtService.extraerCorreo(auth.getName()));
     }
 
     @GetMapping("/dashboard")
