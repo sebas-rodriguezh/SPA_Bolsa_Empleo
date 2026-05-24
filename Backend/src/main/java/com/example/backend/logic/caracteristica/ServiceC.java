@@ -12,6 +12,9 @@ public class ServiceC {
     @Autowired
     private CaracteristicaRepository caracteristicaRepository;
 
+    @Autowired
+    private PuestoCaracteristicaRepository puestoCaracteristicaRepository;
+
     public Iterable<Caracteristica> caracteristicaFindAll () {
         return caracteristicaRepository.findAll();
     }
@@ -154,4 +157,34 @@ public class ServiceC {
         return niveles;
     }
 
+    public void eliminarCaracteristica(Integer id) {
+        Caracteristica c = findById(id);
+        if (c == null)
+            throw new IllegalArgumentException("No existe una característica con id " + id + ".");
+        // Verificar que no esté en uso en algún puesto
+        caracteristicaRepository.delete(c);
+        // Los hijos se eliminan solos por cascade + orphanRemoval
+        Set<Integer> todos = new LinkedHashSet<>();
+        agregarConLosDescendientes(todos, c);
+
+        boolean enUso = false;
+        for (Integer descId : todos) {
+            Caracteristica desc = findById(descId);
+            // Iterar todos los PuestoCaracteristica para verificar
+            for (var pc : puestoCaracteristicaRepository.findAll()) {
+                if (pc.getCaracteristica().getId().equals(descId)) {
+                    enUso = true;
+                    break;
+                }
+            }
+            if (enUso) break;
+        }
+
+        if (enUso)
+            throw new IllegalArgumentException(
+                    "No se puede eliminar \"" + c.getNombre() +
+                            "\" porque está siendo usada en uno o más puestos.");
+
+        caracteristicaRepository.delete(c);
+    }
 }

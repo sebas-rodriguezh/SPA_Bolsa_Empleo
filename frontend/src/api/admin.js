@@ -46,7 +46,13 @@ export async function crearCaracteristica(datos, token) {
     });
     return res.json();
 }
-
+export async function eliminarCaracteristica(id, token) {
+    const res = await fetch(`${BASE}/api/admin/caracteristicas/${id}`, {
+        method: 'DELETE',
+        headers: headers(token)
+    });
+    return res.json();
+}
 export async function getReportes(token, mes = null, anio = null) {
     let url = `${BASE}/api/admin/reportes`;
     if (mes && anio) url += `?mes=${mes}&anio=${anio}`;

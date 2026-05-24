@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import LoadingSpinner from '../../components/LoadingSpinner';
-import { getCaracteristicas, crearCaracteristica } from '../../api/admin';
+import { getCaracteristicas, crearCaracteristica, eliminarCaracteristica } from '../../api/admin';
 
 export default function Caracteristicas() {
     const { token } = useAuth();
@@ -66,6 +66,25 @@ export default function Caracteristicas() {
             setError('Error de conexión con el servidor.');
         } finally {
             setEnviando(false);
+        }
+    };
+
+    const handleEliminar = async (id, nombre) => {
+        if (!window.confirm(`¿Eliminar "${nombre}"? Sus subcategorías también serán eliminadas.`)) return;
+        setError('');
+        setExito('');
+        try {
+            const data = await eliminarCaracteristica(id, token);
+            if (data.error) {
+                setError(data.error);
+            } else {
+                // Si estábamos dentro de la categoría eliminada, subir un nivel
+                if (actualId === id) setActualId(null);
+                setExito(`"${nombre}" eliminada correctamente.`);
+                cargar();
+            }
+        } catch {
+            setError('Error de conexión con el servidor.');
         }
     };
 
@@ -134,6 +153,10 @@ export default function Caracteristicas() {
                                         <button className="btn btn-sm btn-outline-secondary"
                                                 onClick={() => setActualId(cat.id)}>
                                             Entrar
+                                        </button>
+                                        <button className="btn btn-sm btn-outline-danger"
+                                                onClick={() => handleEliminar(cat.id)}>
+                                            ✕
                                         </button>
                                     </div>
                                 ))}

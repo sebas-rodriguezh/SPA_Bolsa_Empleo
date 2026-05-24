@@ -108,6 +108,25 @@ public class AdminController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+    @DeleteMapping("/caracteristicas/{id}")
+    public ResponseEntity<?> eliminarCaracteristica(@PathVariable Integer id) {
+        try {
+            serviceC.eliminarCaracteristica(id);
+            return ResponseEntity.ok(Map.of("mensaje", "Característica eliminada correctamente"));
+
+        } catch (IllegalArgumentException e) {
+            // Captura errores de lógica de negocio (ej: si la característica no existe)
+            return ResponseEntity.status(404).body(Map.of("error", e.getMessage()));
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            // Captura errores si intenta borrar una característica que está siendo usada
+            // como requisito por algún Puesto o vinculada a la habilidad de un Oferente (Llave foránea)
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", "No se puede eliminar la característica porque está asociada a puestos de trabajo u oferentes."
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Error interno al intentar eliminar la característica"));
+        }
+    }
 
     @GetMapping("/reportes")
     public ResponseEntity<?> reportes(@RequestParam(required = false) Integer mes, @RequestParam(required = false) Integer anio) {
