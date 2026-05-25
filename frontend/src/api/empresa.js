@@ -1,4 +1,5 @@
 const BASE = import.meta.env.VITE_API_URL;
+import { fetchAuth } from './fetchAuth';
 
 function headers(token) {
     return {
@@ -8,82 +9,65 @@ function headers(token) {
 }
 
 export async function getEmpresaDashboard(token) {
-    const res = await fetch(`${BASE}/api/empresa/dashboard`, { headers: headers(token) });
-    return res.json();
+    return fetchAuth(`${BASE}/api/empresa/dashboard`, {}, token);
 }
 
 export async function getMisPuestos(token) {
-    const res = await fetch(`${BASE}/api/empresa/puestos`, { headers: headers(token) });
-    return res.json();
+    return fetchAuth(`${BASE}/api/empresa/puestos`, {}, token);
 }
-
 export async function crearPuesto(datos, token) {
-    const res = await fetch(`${BASE}/api/empresa/puestos`, {
+    return fetchAuth(`${BASE}/api/empresa/puestos`, {
         method: 'POST',
-        headers: headers(token),
         body: JSON.stringify(datos)
-    });
-    return res.json();
+    }, token);
 }
 
 export async function desactivarPuesto(id, token) {
-    const res = await fetch(`${BASE}/api/empresa/puestos/${id}/desactivar`, {
-        method: 'POST',
-        headers: headers(token)
-    });
-    return res.json();
+    return fetchAuth(`${BASE}/api/empresa/puestos/${id}/desactivar`, {
+        method: 'POST'
+    }, token);
 }
 
 export async function getRequisitos(puestoId, token) {
-    const res = await fetch(`${BASE}/api/empresa/puestos/${puestoId}/requisitos`, { headers: headers(token) });
-    return res.json();
+    return fetchAuth(`${BASE}/api/empresa/puestos/${puestoId}/requisitos`, {}, token);
 }
 
 export async function agregarRequisito(puestoId, datos, token) {
-    const res = await fetch(`${BASE}/api/empresa/puestos/${puestoId}/requisitos`, {
+    return fetchAuth(`${BASE}/api/empresa/puestos/${puestoId}/requisitos`, {
         method: 'POST',
-        headers: headers(token),
         body: JSON.stringify(datos)
-    });
-    return res.json();
+    }, token);
 }
 
 export async function editarPuesto(id, datos, token) {
-    const res = await fetch(`${BASE}/api/empresa/puestos/${id}`, {
+    return fetchAuth(`${BASE}/api/empresa/puestos/${id}`, {
         method: 'PUT',
-        headers: headers(token),
         body: JSON.stringify(datos)
-    });
-    return res.json();
+    }, token);
 }
 
 export async function quitarRequisito(puestoId, pcId, token) {
-    const res = await fetch(`${BASE}/api/empresa/puestos/${puestoId}/requisitos/${pcId}`, {
-        method: 'DELETE',
-        headers: headers(token)
-    });
-    return res.json();
+    return fetchAuth(`${BASE}/api/empresa/puestos/${puestoId}/requisitos/${pcId}`, {
+        method: 'DELETE'
+    }, token);
 }
 
 export async function getCandidatos(puestoId, modo, token) {
-    const res = await fetch(`${BASE}/api/empresa/puestos/${puestoId}/candidatos?modo=${modo}`, { headers: headers(token) });
-    return res.json();
+    return fetchAuth(`${BASE}/api/empresa/puestos/${puestoId}/candidatos?modo=${modo}`, {}, token);
 }
 
 export async function getDetalleCandidato(oferenteId, puestoId, token) {
-    const res = await fetch(`${BASE}/api/empresa/candidatos/${oferenteId}?puestoId=${puestoId}`, { headers: headers(token) });
-    return res.json();
+    return fetchAuth(`${BASE}/api/empresa/candidatos/${oferenteId}?puestoId=${puestoId}`, {}, token);
 }
 
 export async function getPostulaciones(puestoId, token) {
-    const res = await fetch(`${BASE}/api/empresa/puestos/${puestoId}/postulaciones`, { headers: headers(token) });
-    return res.json();
+    return fetchAuth(`${BASE}/api/empresa/puestos/${puestoId}/postulaciones`, {}, token);
 }
 
 export async function getReporteEmpresa(token, puestoId = null) {
-    let url = `${BASE}/api/empresa/reportes`;
-    if (puestoId) url += `?puestoId=${puestoId}`;
-    const res = await fetch(url, { headers: headers(token) });
-    return res.json();
+    const url = puestoId
+        ? `${BASE}/api/empresa/reportes?puestoId=${puestoId}`
+        : `${BASE}/api/empresa/reportes`;
+    return fetchAuth(url, {}, token);
 }
 

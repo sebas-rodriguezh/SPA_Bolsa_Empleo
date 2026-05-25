@@ -38,9 +38,9 @@ import Reporte           from './pages/empresa/Reporte';
 
 export default function App() {
   return (
-      <AuthProvider>
         <BrowserRouter>
-          <Routes>
+          <AuthProvider>
+            <Routes>
             {/* Públicas */}
             <Route path="/"                   element={<Index />} />
             <Route path="/login"              element={<Login />} />
@@ -82,8 +82,8 @@ export default function App() {
             </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+            </Routes>
+          </AuthProvider>
         </BrowserRouter>
-      </AuthProvider>
   );
 }

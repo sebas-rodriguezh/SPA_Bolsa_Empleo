@@ -60,21 +60,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
             filterChain.doFilter(request, response);
-        } catch (ExpiredJwtException e){
-            //CAPTURAR EL TOKEN EXPIRADO Y RESPONDER LIMPIAMENTE
-            logger.warn("El token JWT ha expirado: " + e.getMessage());
-
-            response.setStatus(HttpStatus.UNAUTHORIZED.value());
-            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-
-            //respuesta JSON para el Frontend
-            Map<String, String> errorDetails = Map.of(
-                    "error", "Token expirado",
-                    "mensaje", "La sesión ha caducado. Por favor, vuelva a iniciar sesión."
-            );
-
-            ObjectMapper mapper = new ObjectMapper();
-            response.getWriter().write(mapper.writeValueAsString(errorDetails));
+        }catch (ExpiredJwtException e) {
+            logger.warn("Token expirado: " + e.getMessage());
+            responder401(response, "Token expirado", "La sesión ha caducado. Por favor, vuelva a iniciar sesión.");
+        } catch (io.jsonwebtoken.MalformedJwtException |
+                 io.jsonwebtoken.security.SignatureException |
+                 io.jsonwebtoken.UnsupportedJwtException |
+                 IllegalArgumentException e) {
+            logger.warn("Token inválido: " + e.getMessage());
+            responder401(response, "Token inválido", "El token de sesión no es válido.");
         }
+    }
+    private void responder401(HttpServletResponse response, String error, String mensaje) throws IOException {
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        ObjectMapper mapper = new ObjectMapper();
+        response.getWriter().write(mapper.writeValueAsString(
+                Map.of("error", error, "mensaje", mensaje)
+        ));
     }
 }

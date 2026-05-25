@@ -5,6 +5,7 @@ import { login as loginApi } from '../api/auth';
 
 export default function Login() {
     const { login } = useAuth();
+    const { sesionExpirada } = useAuth();
     const navigate = useNavigate();
     const [correo, setCorreo] = useState('');
     const [clave, setClave]   = useState('');
@@ -39,6 +40,12 @@ export default function Login() {
             {error && (
                 <div style={{ color: 'red', marginBottom: '15px', padding: '10px', backgroundColor: '#ffeeee', borderRadius: '4px' }}>
                     {error}
+                </div>
+            )}
+
+            {sesionExpirada && (
+                <div className="alert alert-warning d-flex align-items-center gap-2">
+                    ⚠️ Tu sesión ha expirado. Por favor inicia sesión nuevamente.
                 </div>
             )}
 
