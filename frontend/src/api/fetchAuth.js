@@ -1,5 +1,3 @@
-const BASE = import.meta.env.VITE_API_URL;
-
 export async function fetchAuth(url, options = {}, token = null) {
     const res = await fetch(url, {
         ...options,

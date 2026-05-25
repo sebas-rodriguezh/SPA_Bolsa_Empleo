@@ -1,13 +1,6 @@
 const BASE = import.meta.env.VITE_API_URL;
 import { fetchAuth } from './fetchAuth';
 
-function headers(token) {
-    return {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-    };
-}
-
 export async function getEmpresaDashboard(token) {
     return fetchAuth(`${BASE}/api/empresa/dashboard`, {}, token);
 }

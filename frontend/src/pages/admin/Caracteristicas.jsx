@@ -70,7 +70,7 @@ export default function Caracteristicas() {
     };
 
     const handleEliminar = async (id, nombre) => {
-        if (!window.confirm(`¿Eliminar "${nombre}"? Sus subcategorías también serán eliminadas.`)) return;
+        if (!window.confirm(`¿Eliminar característica? Sus subcategorías también serán eliminadas.`)) return;
         setError('');
         setExito('');
         try {
@@ -80,7 +80,7 @@ export default function Caracteristicas() {
             } else {
                 // Si estábamos dentro de la categoría eliminada, subir un nivel
                 if (actualId === id) setActualId(null);
-                setExito(`"${nombre}" eliminada correctamente.`);
+                setExito(`Característica eliminada correctamente.`);
                 cargar();
             }
         } catch {
