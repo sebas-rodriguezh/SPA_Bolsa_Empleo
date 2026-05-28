@@ -13,6 +13,7 @@ import java.util.Date;
 
 // Tirando cambios atrás.
 //Cambios 2.
+//bug resuelto
 @Service
 public class JwtService {
 

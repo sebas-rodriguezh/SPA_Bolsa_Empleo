@@ -4,7 +4,6 @@ import { fetchAuth } from './fetchAuth';
 export async function getEmpresasPendientes(token) {
     return fetchAuth(`${BASE}/api/admin/empresas/pendientes`, {}, token);
 }
-//aprobar empresa solucionado
 export async function aprobarEmpresa(id, token) {
     return fetchAuth(`${BASE}/api/admin/empresas/${id}/aprobar`, {
         method: 'POST'
