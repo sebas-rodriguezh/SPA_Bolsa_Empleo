@@ -6,14 +6,6 @@ export async function getEmpresasPendientes(token) {
 }
 
 export async function aprobarEmpresa(id, token) {
-    const res = await fetch(`${BASE}/api/admin/empresas/${id}/aprobar`, {
-        method: 'POST',
-        headers: headers(token)
-    });
-    return res.json();
-}
-
-export async function aprobarEmpresa(id, token) {
     return fetchAuth(`${BASE}/api/admin/empresas/${id}/aprobar`, {
         method: 'POST'
     }, token);
