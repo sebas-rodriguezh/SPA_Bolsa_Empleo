@@ -115,7 +115,6 @@ public class EmpresaController {
         if (empresa == null)
             return ResponseEntity.status(401).body(Map.of("error", "Empresa no encontrada"));
 
-        //Validaciones del formulario de entrada
         if (dto.getNombre() == null || dto.getNombre().isBlank())
             return ResponseEntity.badRequest().body(Map.of("error", "El nombre del puesto no puede estar vacío"));
         if (dto.getDescripcion() == null || dto.getDescripcion().trim().length() < 10)
@@ -125,7 +124,6 @@ public class EmpresaController {
         if (dto.getEsPublico() == null)
             return ResponseEntity.badRequest().body(Map.of("error", "Debe indicar si el puesto es público o privado"));
 
-        //Buscar el puesto y asegurar que pertenezca a la empresa que está logueada
         Puesto puestoExistente = serviceP.findById(id)
                 .filter(p -> p.getEmpresa().getId().equals(empresa.getId()))
                 .orElse(null);
@@ -133,7 +131,6 @@ public class EmpresaController {
         if (puestoExistente == null)
             return ResponseEntity.status(404).body(Map.of("error", "Puesto no encontrado o no pertenece a esta empresa"));
 
-        //Invocar al servicio para actualizar y guardar los cambios
         try {
             serviceP.actualizarPuesto(
                     puestoExistente,
@@ -214,6 +211,10 @@ public class EmpresaController {
         Caracteristica c = serviceC.findById(dto.getCaracteristicaId());
         if (c == null)
             return ResponseEntity.badRequest().body(Map.of("error", "Característica no encontrada"));
+
+        if (!serviceC.esNodoTerminal(c))
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", "Solo se pueden registrar características específicas (sin subcategorías). " + "\"" + c.getNombre() + "\" tiene subcategorías; seleccione una de ellas."));
 
         serviceP.agregarOActualizarRequisito(puesto, c, dto.getNivel());
         return ResponseEntity.ok(Map.of("mensaje", "Requisito agregado/actualizado correctamente"));

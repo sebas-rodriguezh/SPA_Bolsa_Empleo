@@ -147,6 +147,11 @@ public class ServiceC {
         caracteristicaRepository.save(c);
     }
 
+    public boolean esNodoTerminal(Caracteristica c) {
+        return findHijos(c).isEmpty();
+    }
+
+
     public Map<Integer, Integer> getNivelesArbol()
     {
         Map<Integer, Integer> niveles = new LinkedHashMap<>();
@@ -161,16 +166,13 @@ public class ServiceC {
         Caracteristica c = findById(id);
         if (c == null)
             throw new IllegalArgumentException("No existe una característica con id " + id + ".");
-        // Verificar que no esté en uso en algún puesto
         caracteristicaRepository.delete(c);
-        // Los hijos se eliminan solos por cascade + orphanRemoval
         Set<Integer> todos = new LinkedHashSet<>();
         agregarConLosDescendientes(todos, c);
 
         boolean enUso = false;
         for (Integer descId : todos) {
             Caracteristica desc = findById(descId);
-            // Iterar todos los PuestoCaracteristica para verificar
             for (var pc : puestoCaracteristicaRepository.findAll()) {
                 if (pc.getCaracteristica().getId().equals(descId)) {
                     enUso = true;

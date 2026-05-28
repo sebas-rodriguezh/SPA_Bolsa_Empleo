@@ -91,6 +91,10 @@ public class OferenteController {
         if (c == null)
             return ResponseEntity.badRequest().body(Map.of("error", "Característica no encontrada"));
 
+        if (!serviceC.esNodoTerminal(c))
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", "Solo se pueden registrar características específicas (sin subcategorías). " + "\"" + c.getNombre() + "\" tiene subcategorías; seleccione una de ellas."));
+
         serviceOH.agregarOActualizar(oferente, c, dto.getNivel());
         return ResponseEntity.ok(Map.of("mensaje", "Habilidad registrada/actualizada correctamente"));
     }

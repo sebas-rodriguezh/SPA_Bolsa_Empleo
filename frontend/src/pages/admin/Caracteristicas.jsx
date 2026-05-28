@@ -7,14 +7,14 @@ import { getCaracteristicas, crearCaracteristica, eliminarCaracteristica } from 
 
 export default function Caracteristicas() {
     const { token } = useAuth();
-    const [arbol, setArbol]         = useState([]);
-    const [cargando, setCargando]   = useState(true);
-    const [actualId, setActualId]   = useState(null);
-    const [nombre, setNombre]       = useState('');
-    const [padreId, setPadreId]     = useState('');
-    const [error, setError]         = useState('');
-    const [exito, setExito]         = useState('');
-    const [enviando, setEnviando]   = useState(false);
+    const [arbol, setArbol] = useState([]);
+    const [cargando, setCargando] = useState(true);
+    const [actualId, setActualId] = useState(null);
+    const [nombre, setNombre] = useState('');
+    const [padreId, setPadreId] = useState('');
+    const [error, setError] = useState('');
+    const [exito, setExito] = useState('');
+    const [enviando, setEnviando] = useState(false);
 
     const cargar = () => {
         setCargando(true);
@@ -32,6 +32,8 @@ export default function Caracteristicas() {
             ? c.padreId === '' || c.padreId === null || c.padreId === undefined
             : c.padreId === actualId
     );
+
+    const esTerminal = (id) => !arbol.some(c => c.padreId === id);
 
     const buildRuta = (id) => {
         const ruta = [];
@@ -69,7 +71,7 @@ export default function Caracteristicas() {
         }
     };
 
-    const handleEliminar = async (id, nombre) => {
+    const handleEliminar = async (id) => {
         if (!window.confirm(`¿Eliminar característica? Sus subcategorías también serán eliminadas.`)) return;
         setError('');
         setExito('');
@@ -78,7 +80,6 @@ export default function Caracteristicas() {
             if (data.error) {
                 setError(data.error);
             } else {
-                // Si estábamos dentro de la categoría eliminada, subir un nivel
                 if (actualId === id) setActualId(null);
                 setExito(`Característica eliminada correctamente.`);
                 cargar();
@@ -148,22 +149,43 @@ export default function Caracteristicas() {
                                 )}
 
                                 {categorias.map(cat => (
-                                    <div key={cat.id} className="d-flex justify-content-between align-items-center border rounded bg-white p-2 mb-2">
-                                        <span className="fw-semibold">{cat.nombre}</span>
-                                        <button className="btn btn-sm btn-outline-secondary"
-                                                onClick={() => setActualId(cat.id)}>
-                                            Entrar
-                                        </button>
-                                        <button className="btn btn-sm btn-outline-danger"
-                                                onClick={() => handleEliminar(cat.id)}>
-                                            ✕
-                                        </button>
+                                    <div key={cat.id}
+                                         className="d-flex align-items-center border rounded bg-white p-2 mb-2 gap-2">
+                                        <span className="fw-semibold flex-grow-1">
+                                            {cat.nombre}
+                                            {esTerminal(cat.id) && (
+                                                <span
+                                                    className="ms-2 badge bg-success"
+                                                    style={{ fontSize: '0.65rem', verticalAlign: 'middle' }}
+                                                    title="Nodo terminal: puede ser seleccionado como requisito o habilidad"
+                                                >
+                                                    hoja
+                                                </span>
+                                            )}
+                                        </span>
+                                        <div className="d-flex gap-2" role="group">
+                                            {!esTerminal(cat.id) && (
+                                                <button
+                                                    className="btn btn-outline-secondary"
+                                                    onClick={() => setActualId(cat.id)}
+                                                    title="Entrar en subcategorías"
+                                                >
+                                                    Entrar
+                                                </button>
+                                            )}
+                                            <button
+                                                className="btn btn-outline-danger"
+                                                onClick={() => handleEliminar(cat.id)}
+                                                title="Eliminar"
+                                            >
+                                                ✕
+                                            </button>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
                         </div>
 
-                        {/* Panel derecho: formulario */}
                         <div className="col-md-6">
                             <div className="border rounded p-3 bg-light">
                                 <p className="fw-bold mb-3">Agregar Característica</p>
@@ -200,6 +222,14 @@ export default function Caracteristicas() {
                                         </div>
                                     </div>
                                 </form>
+
+                                <hr className="my-3" />
+                                <p className="text-muted small mb-0">
+                                    <span className="badge bg-success me-1" style={{ fontSize: '0.65rem' }}>hoja</span>
+                                    Los nodos marcados como <strong>hoja</strong> son terminales: empresas y oferentes
+                                    solo pueden seleccionarlos como requisitos o habilidades.
+                                    Los nodos con subcategorías solo sirven para organizar la jerarquía.
+                                </p>
                             </div>
                         </div>
 
