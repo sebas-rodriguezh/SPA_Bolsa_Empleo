@@ -166,7 +166,7 @@ public class ServiceC {
         Caracteristica c = findById(id);
         if (c == null)
             throw new IllegalArgumentException("No existe una característica con id " + id + ".");
-        caracteristicaRepository.delete(c);
+
         Set<Integer> todos = new LinkedHashSet<>();
         agregarConLosDescendientes(todos, c);
 
